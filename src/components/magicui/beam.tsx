@@ -126,9 +126,12 @@ export const Beam = ({
       {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}
-          style={scrollLinked ? {
-             [vertical ? "y" : "x"]: position,
-          } : {}}
+          style={{
+             ...(scrollLinked ? { [vertical ? "y" : "x"]: position } : {}),
+             width: 2,
+             height: 2,
+             boxShadow: "0 0 15px 2px #fff",
+          }}
           initial={!scrollLinked ? (vertical ? { y: "-100%", x: "50%" } : { x: "-100%", y: "50%" }) : { x: "50%", opacity: 0 }}
           animate={!scrollLinked ? {
             [vertical ? "y" : "x"]: "200%",
@@ -150,7 +153,6 @@ export const Beam = ({
             delay: i * 0.2
           }}
           className="absolute z-40 bg-white rounded-full"
-          style={{ width: 2, height: 2, boxShadow: "0 0 15px 2px #fff" }}
         />
       ))}
     </div>

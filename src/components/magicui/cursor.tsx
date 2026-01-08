@@ -82,7 +82,7 @@ export const CustomCursor = () => {
       window.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [mouseX, mouseY, isVisible]);
+  }, [mouseX, mouseY, isVisible, rotate]);
 
   if (!mounted) return null;
 
