@@ -10,7 +10,7 @@ export const DATA = {
   description:
     "Software Engineer turned Builder. I love building things and helping people. Very active on GitHub.",
   summary:
-    "I’m currently a student pursuing [Information Technology](/#education), passionate about building products and learning by doing. Along the way, I’ve participated in [4 hackathons](/#hackathons) and became a finalist in all of them, driven by curiosity and problem-solving. I actively build and share my work through my [YouTube channel](https://www.youtube.com/@MaheshThakur-dev), where I document projects, development learnings, and experiments as I grow as a developer.",
+    "I’m currently a student pursuing [Information Technology](#education), passionate about building products and learning by doing. Along the way, I’ve participated in [4 hackathons](#hackathons) and became a finalist in all of them, driven by curiosity and problem-solving. I actively build and share my work through my [YouTube channel](https://www.youtube.com/@MaheshThakur-dev), where I document projects, development learnings, and experiments as I grow as a developer.",
   avatarUrl: "/mahesh.webp",
   skills: [
     "React",

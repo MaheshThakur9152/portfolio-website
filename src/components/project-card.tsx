@@ -73,6 +73,7 @@ export function ProjectCard({
               width={500}
               height={300}
               className="h-40 lg:h-48 w-full overflow-hidden object-cover object-top transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
         </Link>

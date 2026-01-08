@@ -20,6 +20,11 @@ export const FloatingElements = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // Disable on mobile/tablet or if reduced motion
+    if (typeof window !== 'undefined' && (window.matchMedia("(hover: none)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+      return;
+    }
+
     const el = containerRef.current;
     if (!el) return;
 
@@ -28,6 +33,7 @@ export const FloatingElements = () => {
     let curRX = 0;
     let curRY = 0;
     let rafId = 0;
+    let isRunning = true;
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -39,16 +45,25 @@ export const FloatingElements = () => {
     };
 
     const update = () => {
+      // Optimization: Only update if significant change
+       if (Math.abs(curRX - targetRX) < 0.001 && Math.abs(curRY - targetRY) < 0.001) {
+           // still need to check periodically or on mouse move, but we can't stop the loop purely here unless we restart it on mousemove.
+           // Since this is a global background effect, let it run but maybe clamp?
+           // Actually, let's keep it running but efficient.
+       }
+       
       curRX = lerp(curRX, targetRX, 0.08);
       curRY = lerp(curRY, targetRY, 0.08);
       el.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
-      rafId = requestAnimationFrame(update);
+      
+      if (isRunning) rafId = requestAnimationFrame(update);
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
     rafId = requestAnimationFrame(update);
 
     return () => {
+      isRunning = false;
       cancelAnimationFrame(rafId);
       window.removeEventListener("mousemove", onMove);
     };

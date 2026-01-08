@@ -70,18 +70,18 @@
     * {
       @apply border-border;
     }
-    body {
-      @apply bg-background text-foreground;
-      cursor: none;
-      scroll-behavior: smooth;
+    @media (hover: hover) and (pointer: fine) {
+      body {
+        cursor: none;
+      }
+      a, button, [role="button"], input, textarea, select {
+        cursor: none !important;
+      }
     }
 
-    ::selection {
-      @apply bg-primary/20 text-primary;
-    }
-    
-    a, button, [role="button"], input, textarea, select {
-      cursor: none !important;
+    body {
+      @apply bg-background text-foreground;
+      scroll-behavior: smooth;
     }
   }
 
@@ -149,8 +149,26 @@
   @keyframes beam-particle-move { 0% { opacity: 0; transform: translateY(-100%) scale(1) } 50% { opacity: 1; transform: translateY(40%) scale(1.5) } 100% { opacity: 0; transform: translateY(200%) scale(0) } }
 
   /* Blur fade (intersection-observer controlled) */
-  .blur-fade { opacity: 0; transform: translateY(var(--bf-y, 6px)); filter: blur(var(--bf-blur, 6px)); transition: transform var(--bf-duration, 0.4s) ease, opacity var(--bf-duration, 0.4s) ease, filter var(--bf-duration, 0.4s) ease; transition-delay: var(--bf-delay, 0s); }
-  .blur-fade.in-view { opacity: 1; transform: translateY(calc(var(--bf-y, 6px) * -1)); filter: blur(0px); }
+  .blur-fade { 
+    opacity: 0; 
+    transform: translate3d(0, var(--bf-y, 6px), 0); 
+    filter: blur(var(--bf-blur, 6px)); 
+    transition: transform var(--bf-duration, 0.4s) ease, opacity var(--bf-duration, 0.4s) ease, filter var(--bf-duration, 0.4s) ease; 
+    transition-delay: var(--bf-delay, 0s); 
+    will-change: transform, opacity, filter;
+  }
+  
+  @media (max-width: 768px) {
+    .blur-fade {
+      filter: none !important; /* Disable blur on mobile for performance */
+    }
+    /* Reduce large fixed background blurs on mobile */
+    .fixed.blur-\[120px\], .fixed.blur-\[100px\] {
+      display: none;
+    }
+  }
+
+  .blur-fade.in-view { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0px); }
 
   /* Blur-fade text (per-char) */
   .blur-fade-text { display: inline-block; opacity: 0; transform: translateY(8px); filter: blur(6px); animation-name: blur-fade-text; animation-fill-mode: forwards; }

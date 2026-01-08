@@ -40,30 +40,68 @@ export const ResumeCard = ({
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const transformRef = useRef({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = React.useState(false);
 
   useEffect(() => {
+    // Disable on mobile/tablet or if reduced motion
+    if (typeof window !== 'undefined' && (window.matchMedia("(hover: none)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+      return;
+    }
+
     const el = wrapperRef.current;
     if (!el) return;
 
     let curRX = 0;
     let curRY = 0;
     let raf = 0;
+    let isActive = false;
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
     const update = () => {
       const { x: targetRX, y: targetRY } = transformRef.current;
+      
+      // Optimization: Stop loop if close enough to target and target is 0 (settled)
+      const diffX = Math.abs(curRX - targetRX);
+      const diffY = Math.abs(curRY - targetRY);
+      
+      if (!isActive && diffX < 0.01 && diffY < 0.01) {
+        curRX = targetRX;
+        curRY = targetRY;
+        el.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
+        return; 
+      }
+
       curRX = lerp(curRX, targetRX, 0.08);
       curRY = lerp(curRY, targetRY, 0.08);
+      
       el.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
       raf = requestAnimationFrame(update);
     };
 
-    raf = requestAnimationFrame(update);
+    if (isHovering || transformRef.current.x !== 0 || transformRef.current.y !== 0) {
+      isActive = true;
+      raf = requestAnimationFrame(update);
+    } else {
+        isActive = false;
+        // ensure reset
+        const updateOnce = () => {
+             const { x: targetRX, y: targetRY } = transformRef.current;
+             curRX = lerp(curRX, targetRX, 0.08);
+             curRY = lerp(curRY, targetRY, 0.08);
+             el.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
+             if (Math.abs(curRX - targetRX) > 0.01 || Math.abs(curRY - targetRY) > 0.01) {
+                 raf = requestAnimationFrame(updateOnce);
+             }
+        }
+        raf = requestAnimationFrame(updateOnce);
+    }
+
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [isHovering]);
 
   function handleMouseMove(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (window.matchMedia("(hover: none)").matches) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -76,7 +114,12 @@ export const ResumeCard = ({
     transformRef.current = { x: -y, y: x };
   }
 
+  function handleMouseEnter() {
+      setIsHovering(true);
+  }
+
   function handleMouseLeave() {
+     setIsHovering(false);
      transformRef.current = { x: 0, y: 0 };
   }
 
@@ -86,6 +129,7 @@ export const ResumeCard = ({
       className="block cursor-none perspective-1000"
       onClick={handleClick}
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <div ref={wrapperRef} style={{ transformStyle: "preserve-3d" }}>

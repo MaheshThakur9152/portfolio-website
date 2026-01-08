@@ -7,6 +7,11 @@ export const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // Only enable on devices with fine pointer (mouse)
+    if (typeof window !== "undefined" && !window.matchMedia("(pointer: fine)").matches) {
+       return;
+    }
+
     const container = containerRef.current;
     const cursor = cursorRef.current;
     if (!container || !cursor) return;
