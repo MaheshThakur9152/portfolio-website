@@ -1,16 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, Variants } from "framer-motion";
 import { useMemo } from "react";
 
 interface BlurFadeTextProps {
   text: string;
   className?: string;
-  variant?: {
-    hidden: { y: number };
-    visible: { y: number };
-  };
   duration?: number;
   characterDelay?: number;
   delay?: number;
@@ -20,40 +15,29 @@ interface BlurFadeTextProps {
 const BlurFadeText = ({
   text,
   className,
-  variant,
   characterDelay = 0.03,
   delay = 0,
   duration = 0.4,
   yOffset = 8,
   animateByCharacter = false,
 }: BlurFadeTextProps) => {
-  const defaultVariants: Variants = {
-    hidden: { y: yOffset, opacity: 0, filter: "blur(8px)" },
-    visible: { y: -yOffset, opacity: 1, filter: "blur(0px)" },
-  };
-  const combinedVariants = variant || defaultVariants;
   const characters = useMemo(() => Array.from(text), [text]);
 
   if (animateByCharacter) {
     return (
       <div className="flex">
         {characters.map((char, i) => (
-          <motion.span
+          <span
             key={i}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={combinedVariants}
-            transition={{
-              delay: delay + i * characterDelay,
-              duration,
-              ease: "easeOut",
+            className={cn("inline-block blur-fade-text", className)}
+            style={{
+              animationDuration: `${duration}s`,
+              animationDelay: `${delay + i * characterDelay}s`,
+              transform: `translateY(${yOffset}px)`,
             }}
-            className={cn("inline-block", className)}
-            style={{ width: char.trim() === "" ? "0.2em" : "auto" }}
           >
             {char}
-          </motion.span>
+          </span>
         ))}
       </div>
     );
@@ -61,20 +45,12 @@ const BlurFadeText = ({
 
   return (
     <div className="flex">
-      <motion.span
-        initial="hidden"
-        animate="visible"
-        exit="hidden"
-        variants={combinedVariants}
-        transition={{
-          delay,
-          duration,
-          ease: "easeOut",
-        }}
-        className={cn("inline-block", className)}
+      <span
+        className={cn("inline-block blur-fade-text", className)}
+        style={{ animationDuration: `${duration}s`, animationDelay: `${delay}s`, transform: `translateY(${yOffset}px)` }}
       >
         {text}
-      </motion.span>
+      </span>
     </div>
   );
 };

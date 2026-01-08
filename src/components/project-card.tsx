@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -9,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
@@ -42,15 +43,10 @@ export function ProjectCard({
   image,
   video,
   links,
-  className,
+  className
 }: Props) {
   return (
-    <motion.div
-      whileHover={{ y: -5, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="group h-full"
-    >
+    <div className="group h-full transform-gpu transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]">
       <Card
         className={
           "flex flex-col overflow-hidden border border-white/10 bg-background/5 backdrop-blur-md hover:bg-muted/10 transition-colors duration-500 ease-in-out h-full shadow-none relative"
@@ -113,8 +109,7 @@ export function ProjectCard({
               {links?.map((link, idx) => (
                 <Link href={link?.href} key={idx} target="_blank">
                   <Badge key={idx} className="flex gap-2 px-2 py-1 text-[10px] lg:text-xs transition-all hover:bg-primary hover:text-primary-foreground border-border/10">
-                    {link.icon}
-                    {link.type}
+                    <React.Fragment>{link.icon} {link.type}</React.Fragment>
                   </Badge>
                 </Link>
               ))}
@@ -122,6 +117,6 @@ export function ProjectCard({
           )}
         </CardFooter>
       </Card>
-    </motion.div>
+    </div>
   );
 }

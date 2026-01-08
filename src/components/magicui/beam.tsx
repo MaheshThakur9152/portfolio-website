@@ -1,8 +1,7 @@
 "use client";
 
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 interface BeamProps {
   className?: string;
@@ -21,19 +20,34 @@ export const Beam = ({
   vertical = true,
   scrollLinked = false,
 }: BeamProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
+  useEffect(() => {
+    // If scrollLinked is true, we can update a CSS variable based on scroll position
+    if (!scrollLinked) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-  const position = useTransform(scrollY, [0, 1], ["-20%", "120%"]);
+    let raf = 0;
+    const onScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const progress = Math.min(Math.max((window.innerHeight - rect.top) / (window.innerHeight + rect.height), 0), 1);
+      el.style.setProperty("--beam-pos", `${-20 + progress * 140}%`);
+    };
+
+    const tick = () => {
+      onScroll();
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [scrollLinked]);
 
   return (
     <div
@@ -45,114 +59,43 @@ export const Beam = ({
       )}
     >
       {/* Laser Core */}
-      <motion.div
+      <div
+        className={cn("absolute z-30", vertical ? "w-full" : "h-full")}
         style={{
-          [vertical ? "y" : "x"]: scrollLinked ? position : undefined,
-          [vertical ? "height" : "width"]: "35%",
-          [vertical ? "width" : "height"]: "100%",
-          filter: "brightness(6) contrast(2) blur(0px)",
+          animation: scrollLinked ? "none" : `beam-move ${duration}s linear infinite ${delay}s`,
         }}
-        initial={!scrollLinked ? (vertical ? { y: "-100%" } : { x: "-100%" }) : false}
-        animate={!scrollLinked ? (vertical ? { y: "200%" } : { x: "200%" }) : false}
-        transition={!scrollLinked ? {
-          duration,
-          repeat: Infinity,
-          ease: [0.4, 0, 0.2, 1],
-          delay,
-        } : undefined}
-        className={cn(
-          "absolute z-30",
-          vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r",
-          "from-transparent via-white to-transparent"
-        )}
       >
-        {/* Laser Head (Point of impact) */}
-        <div 
+        <div
+          className={cn(vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r", "from-transparent via-white to-transparent")}
+          style={{ filter: "brightness(6) contrast(2)" }}
+        />
+
+        <div
           className={cn(
             "absolute shadow-[0_0_50px_10px_rgba(255,255,255,0.9),0_0_100px_20px_rgba(168,85,247,0.8)]",
-            vertical ? "bottom-0 left-[-6px] right-[-6px] h-[3px] bg-white rounded-full" : "right-0 top-[-6px] bottom-[-6px] w-[3px] bg-white rounded-full",
+            vertical ? "bottom-0 left-[-6px] right-[-6px] h-[3px] bg-white rounded-full" : "right-0 top-[-6px] bottom-[-6px] w-[3px] bg-white rounded-full"
           )}
         />
-      </motion.div>
+      </div>
 
-      {/* Extreme Purple Glow */}
-      <motion.div
-        style={{
-          [vertical ? "y" : "x"]: scrollLinked ? position : undefined,
-          [vertical ? "height" : "width"]: "40%",
-          [vertical ? "width" : "height"]: "100%",
-          filter: "blur(12px) brightness(2)",
-        }}
-        initial={!scrollLinked ? (vertical ? { y: "-100%" } : { x: "-100%" }) : false}
-        animate={!scrollLinked ? (vertical ? { y: "200%" } : { x: "200%" }) : false}
-        transition={!scrollLinked ? {
-          duration: duration * 1.1,
-          repeat: Infinity,
-          ease: "easeOut",
-          delay,
-        } : undefined}
-        className={cn(
-          "absolute z-20",
-          vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r",
-          color
-        )}
-      />
+      {/* Glows */}
+      <div className={cn("absolute z-20", vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r", color)} style={{ animation: `beam-move ${duration * 1.1}s ease-out infinite ${delay}s`, filter: "blur(12px) brightness(2)" }} />
+      <div className={cn("absolute z-10", vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r", color)} style={{ animation: `beam-move ${duration * 1.5}s linear infinite ${delay}s`, filter: "blur(40px) saturate(3)", opacity: 0.6 }} />
 
-      {/* Screen-Filling Atmosphere Glow */}
-      <motion.div
-        style={{
-          [vertical ? "y" : "x"]: scrollLinked ? position : undefined,
-          [vertical ? "height" : "width"]: "60%",
-          [vertical ? "width" : "height"]: "100%",
-          filter: "blur(40px) saturate(3)",
-          opacity: 0.6,
-        }}
-        initial={!scrollLinked ? (vertical ? { y: "-100%" } : { x: "-100%" }) : false}
-        animate={!scrollLinked ? (vertical ? { y: "200%" } : { x: "200%" }) : false}
-        transition={!scrollLinked ? {
-          duration: duration * 1.5,
-          repeat: Infinity,
-          ease: "linear",
-          delay,
-        } : undefined}
-        className={cn(
-          "absolute z-10",
-          vertical ? "w-full bg-gradient-to-b" : "h-full bg-gradient-to-r",
-          color
-        )}
-      />
-
-      {/* Laser Particles (Constant stream) */}
+      {/* Particles (CSS) */}
       {[...Array(5)].map((_, i) => (
-        <motion.div
+        <div
           key={i}
+          className="absolute z-40 bg-white rounded-full beam-particle"
           style={{
-             ...(scrollLinked ? { [vertical ? "y" : "x"]: position } : {}),
-             width: 2,
-             height: 2,
-             boxShadow: "0 0 15px 2px #fff",
+            width: 2,
+            height: 2,
+            boxShadow: "0 0 15px 2px #fff",
+            animationDelay: `${delay + i * 0.05}s`,
+            animationDuration: `${duration * (0.6 + i * 0.1)}s`,
+            left: vertical ? undefined : `${30 + i * 15}%`,
+            top: vertical ? `${30 + i * 15}%` : undefined,
           }}
-          initial={!scrollLinked ? (vertical ? { y: "-100%", x: "50%" } : { x: "-100%", y: "50%" }) : { x: "50%", opacity: 0 }}
-          animate={!scrollLinked ? {
-            [vertical ? "y" : "x"]: "200%",
-            [vertical ? "x" : "y"]: ["40%", "60%", "40%"],
-            opacity: [0, 1, 0]
-          } : {
-            opacity: [0, 1, 0],
-            scale: [1, 2, 0],
-            [vertical ? "x" : "y"]: `${30 + (i * 15)}%`
-          }}
-          transition={!scrollLinked ? {
-            duration: duration * (0.6 + i * 0.1),
-            repeat: Infinity,
-            ease: "linear",
-            delay: delay + (i * 0.05),
-          } : {
-            duration: 1,
-            repeat: Infinity,
-            delay: i * 0.2
-          }}
-          className="absolute z-40 bg-white rounded-full"
         />
       ))}
     </div>

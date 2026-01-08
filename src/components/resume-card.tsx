@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useRef, useEffect } from "react";
 import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -38,17 +38,30 @@ export const ResumeCard = ({
     }
   };
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const transformRef = useRef({ x: 0, y: 0 });
 
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), {
-    stiffness: 300,
-    damping: 30,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), {
-    stiffness: 300,
-    damping: 30,
-  });
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    let curRX = 0;
+    let curRY = 0;
+    let raf = 0;
+
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const update = () => {
+      const { x: targetRX, y: targetRY } = transformRef.current;
+      curRX = lerp(curRX, targetRX, 0.08);
+      curRY = lerp(curRY, targetRY, 0.08);
+      el.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
+      raf = requestAnimationFrame(update);
+    };
+
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   function handleMouseMove(event: React.MouseEvent<HTMLAnchorElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -57,13 +70,14 @@ export const ResumeCard = ({
     const mouseXRelative = event.clientX - rect.left;
     const mouseYRelative = event.clientY - rect.top;
 
-    mouseX.set(mouseXRelative / width - 0.5);
-    mouseY.set(mouseYRelative / height - 0.5);
+    const x = (mouseXRelative / width - 0.5) * 10;
+    const y = (mouseYRelative / height - 0.5) * 10;
+
+    transformRef.current = { x: -y, y: x };
   }
 
   function handleMouseLeave() {
-    mouseX.set(0);
-    mouseY.set(0);
+     transformRef.current = { x: 0, y: 0 };
   }
 
   return (
@@ -74,22 +88,9 @@ export const ResumeCard = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <motion.div
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
-      >
+      <div ref={wrapperRef} style={{ transformStyle: "preserve-3d" }}>
+
         <Card className="flex transition-all duration-300 bg-transparent hover:bg-muted/10 backdrop-blur-[2px] group border-none hover:border-none shadow-none relative overflow-hidden">
-           <motion.div 
-            className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.05),transparent_80%)]" 
-            style={{ 
-               // @ts-ignore
-               "--mouse-x": useTransform(mouseX, [-0.5, 0.5], ["0%", "100%"]),
-               "--mouse-y": useTransform(mouseY, [-0.5, 0.5], ["0%", "100%"])
-            } as any}
-          />
           <div className="flex-none transition-transform duration-300 group-hover:scale-105 p-4 z-10">
             <Avatar className="border-none size-12 m-auto bg-transparent shadow-none">
               <AvatarImage
@@ -132,24 +133,13 @@ export const ResumeCard = ({
               {subtitle && <div className="font-sans text-xs lg:text-sm text-muted-foreground mt-1">{subtitle}</div>}
             </CardHeader>
             {description && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{
-                  opacity: isExpanded ? 1 : 0,
-                  height: isExpanded ? "auto" : 0,
-                }}
-                transition={{
-                  duration: 0.7,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="mt-2 text-xs sm:text-sm lg:text-base text-muted-foreground leading-relaxed"
-              >
+              <div className={`mt-2 text-xs sm:text-sm lg:text-base text-muted-foreground leading-relaxed overflow-hidden transition-all duration-700 ${isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                 {description}
-              </motion.div>
+              </div>
             )}
           </div>
         </Card>
-      </motion.div>
+      </div>
     </Link>
   );
 };

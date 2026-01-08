@@ -9,7 +9,7 @@ import { Beam } from "@/components/magicui/beam";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DATA } from "@/data/resume";
-import { motion } from "framer-motion";
+
 import Link from "next/link";
 import Markdown from "react-markdown";
 
@@ -22,34 +22,15 @@ export default function Page() {
         <div className="mx-auto w-full max-w-2xl lg:max-w-5xl space-y-8">
           <div className="gap-2 flex justify-between">
             <div className="flex-col flex flex-1 space-y-1.5">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="cursor-none flex items-center gap-3"
-              >
+              <div className="cursor-none flex items-center gap-3 transform-gpu transition-transform duration-200 hover:scale-[1.02]">
                 <BlurFadeText
                   delay={BLUR_FADE_DELAY}
                   className="text-3xl font-bold tracking-tighter sm:text-5xl lg:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/50"
                   yOffset={8}
                   text={`Hi, I'm ${DATA.name.split(" ")[0]}`}
                 />
-                <motion.span
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ 
-                    delay: BLUR_FADE_DELAY + 0.2,
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20 
-                  }}
-                  className="text-3xl sm:text-5xl lg:text-6xl inline-block origin-bottom-right"
-                  whileHover={{ 
-                    rotate: [0, -10, 12, -10, 9, 0],
-                    transition: { duration: 0.5 }
-                  }}
-                >
-                  👋
-                </motion.span>
-              </motion.div>
+                <span className="text-3xl sm:text-5xl lg:text-6xl inline-block origin-bottom-right emoji" style={{ animationDelay: `${BLUR_FADE_DELAY + 0.2}s` }}>👋</span>
+              </div>
               <BlurFadeText
                 className="max-w-[600px] md:text-xl"
                 delay={BLUR_FADE_DELAY}
@@ -57,16 +38,12 @@ export default function Page() {
               />
             </div>
             <BlurFade delay={BLUR_FADE_DELAY}>
-              <motion.div
-                whileHover={{ rotateY: 15, rotateX: -15, scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="perspective-1000"
-              >
+              <div className="perspective-1000 avatar-tilt">
                 <Avatar className="size-28 lg:size-40 border border-white/10 shadow-2xl">
                   <AvatarImage alt={DATA.name} src={DATA.avatarUrl} className="object-cover scale-[1.35]" />
                   <AvatarFallback>{DATA.initials}</AvatarFallback>
                 </Avatar>
-              </motion.div>
+              </div>
             </BlurFade>
           </div>
         </div>

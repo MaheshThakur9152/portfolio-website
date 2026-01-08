@@ -2,8 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import React, { PropsWithChildren, useRef } from "react";
+import React, { PropsWithChildren, useRef, useEffect } from "react";
 
 export interface DockProps extends VariantProps<typeof dockVariants> {
   className?: string;
@@ -30,13 +29,54 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
     },
     ref
   ) => {
-    const mousex = useMotionValue(Infinity);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    // We'll update child icon sizes directly for performance via rAF
+    useEffect(() => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      const icons = Array.from(el.querySelectorAll<HTMLDivElement>('[data-dock-icon]'))
+        .map((node) => ({ node, rect: node.getBoundingClientRect() }));
+
+      let raf = 0;
+      let pageX = Infinity;
+
+      const onMove = (e: MouseEvent) => {
+        pageX = e.pageX;
+      };
+
+      const onLeave = () => {
+        pageX = Infinity;
+      };
+
+      const update = () => {
+        icons.forEach(({ node }) => {
+          const bounds = node.getBoundingClientRect();
+          const center = bounds.left + bounds.width / 2;
+          const distanceToMouse = Math.abs(pageX - center);
+          const pct = Math.max(0, 1 - distanceToMouse / distance);
+          const width = Math.max(40, Math.round(40 + (magnification - 40) * pct));
+          node.style.width = `${width}px`;
+        });
+        raf = requestAnimationFrame(update);
+      };
+
+      window.addEventListener('mousemove', onMove, { passive: true });
+      window.addEventListener('mouseleave', onLeave, { passive: true });
+      raf = requestAnimationFrame(update);
+
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseleave', onLeave);
+      };
+    }, [magnification, distance]);
 
     const renderChildren = () => {
       return React.Children.map(children, (child: any) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, {
-            mousex,
             magnification,
             distance,
           } as DockIconProps);
@@ -46,15 +86,9 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(
     };
 
     return (
-      <motion.div
-        ref={ref}
-        onMouseMove={(e) => mousex.set(e.pageX)}
-        onMouseLeave={() => mousex.set(Infinity)}
-        {...props}
-        className={cn(dockVariants({ className }))}
-      >
+      <div ref={(node) => { (ref as any) = node; containerRef.current = node; }} {...props} className={cn(dockVariants({ className }))}>
         {renderChildren()}
-      </motion.div>
+      </div>
     );
   }
 );
@@ -75,42 +109,26 @@ const DockIcon = ({
   size,
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
-  mousex,
   className,
   children,
   ...props
 }: DockIconProps) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
-  const distanceCalc = useTransform(mousex, (val: number) => {
-    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - bounds.x - bounds.width / 2;
-  });
-
-  let widthSync = useTransform(
-    distanceCalc,
-    [-distance, 0, distance],
-    [40, magnification, 40]
-  );
-
-  let width = useSpring(widthSync, {
-    mass: 0.1,
-    stiffness: 150,
-    damping: 12,
-  });
+  // initial size
+  useEffect(() => {
+    if (ref.current) ref.current.style.width = `40px`;
+  }, []);
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      style={{ width }}
-      className={cn(
-        "flex aspect-square cursor-pointer items-center justify-center rounded-full",
-        className
-      )}
+      data-dock-icon
+      className={cn("flex aspect-square cursor-pointer items-center justify-center rounded-full", className)}
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };
 

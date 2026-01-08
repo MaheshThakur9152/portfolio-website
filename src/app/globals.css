@@ -101,6 +101,72 @@
     transform-style: preserve-3d;
   }
   
+  /* Custom cursor styles — hardware-accelerated + low-cost updates */
+  .cursor-element {
+    width: 20px;
+    height: 24px;
+    color: var(--foreground);
+    display: inline-block;
+    will-change: transform, rotate;
+    pointer-events: none;
+    transition: transform 150ms linear, scale 120ms ease;
+    transform-origin: center 0%;
+  }
+
+  .cursor-element.cursor--hovering,
+  .cursor--hovering .cursor-element {
+    transform: scale(1.15);
+  }
+
+  .cursor-element.cursor--pressed,
+  .cursor--pressed .cursor-element {
+    transform: scale(0.9);
+  }
+
+  /* Floating elements animation (GPU friendly) */
+  .float-element {
+    animation-name: float-move;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    transform-origin: center;
+  }
+
+  @keyframes float-move {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg) }
+    25% { transform: translate3d(8px, -6px, 0) rotate(20deg) }
+    50% { transform: translate3d(0, 10px, 0) rotate(40deg) }
+    75% { transform: translate3d(-6px, -4px, 0) rotate(20deg) }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) }
+  }
+
+  /* Beam animations (replaces heavy JS-based motion) */
+  @keyframes beam-move {
+    0% { transform: translateY(-100%) }
+    100% { transform: translateY(200%) }
+  }
+
+  .beam-particle { animation-name: beam-particle-move; animation-iteration-count: infinite; animation-timing-function: linear; }
+  @keyframes beam-particle-move { 0% { opacity: 0; transform: translateY(-100%) scale(1) } 50% { opacity: 1; transform: translateY(40%) scale(1.5) } 100% { opacity: 0; transform: translateY(200%) scale(0) } }
+
+  /* Blur fade (intersection-observer controlled) */
+  .blur-fade { opacity: 0; transform: translateY(var(--bf-y, 6px)); filter: blur(var(--bf-blur, 6px)); transition: transform var(--bf-duration, 0.4s) ease, opacity var(--bf-duration, 0.4s) ease, filter var(--bf-duration, 0.4s) ease; transition-delay: var(--bf-delay, 0s); }
+  .blur-fade.in-view { opacity: 1; transform: translateY(calc(var(--bf-y, 6px) * -1)); filter: blur(0px); }
+
+  /* Blur-fade text (per-char) */
+  .blur-fade-text { display: inline-block; opacity: 0; transform: translateY(8px); filter: blur(6px); animation-name: blur-fade-text; animation-fill-mode: forwards; }
+  @keyframes blur-fade-text { to { opacity: 1; transform: translateY(0); filter: blur(0px); } }
+
+  /* Small emoji reveal + playful hover */
+  .emoji { opacity: 0; transform: scale(0); animation: emoji-in 400ms cubic-bezier(.2,1,.3,1) forwards; }
+  @keyframes emoji-in { to { opacity: 1; transform: scale(1); } }
+
+  .emoji:hover { animation: none; transform-origin: bottom right; animation: emoji-wiggle 500ms ease; }
+  @keyframes emoji-wiggle { 0% { transform: rotate(0) } 25% { transform: rotate(-15deg) } 50% { transform: rotate(12deg) } 75% { transform: rotate(-8deg) } 100% { transform: rotate(0) } }
+
+  /* Avatar tilt (pure CSS hover) */
+  .avatar-tilt { transition: transform 220ms ease; }
+  .avatar-tilt:hover { transform: rotateY(15deg) rotateX(-15deg) scale(1.05); }
+
   pre {
     @apply !px-0 rounded-lg overflow-x-auto py-4
   }
