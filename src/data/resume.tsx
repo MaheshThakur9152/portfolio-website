@@ -137,7 +137,7 @@ export const DATA = {
     {
       title: "Ambe Service Website",
       href: "https://ambeservice.com",
-      dates: "Jan 2024 - Feb 2024",
+      dates: "Jan 2025 - Feb 2025",
       active: true,
       description:
         "I worked as a frontend developer, focusing on building clean, high-performance interfaces with strong UI/UX and SEO foundations. This helped improve user engagement, accessibility, and overall visibility of the product.",
@@ -165,7 +165,7 @@ export const DATA = {
     {
       title: "Cosinv Ai",
       href: "https://cosinv.com",
-      dates: "June 2023 - Present",
+      dates: "May 2025 - July 2025",
       active: true,
       description:
         "Designed, developed and sold animated UI components for developers.",

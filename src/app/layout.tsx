@@ -8,8 +8,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { CustomCursor } from "@/components/magicui/cursor";
 import { FloatingElements } from "@/components/magicui/floating-elements";
-import dynamic from "next/dynamic";
-const LoadingScreen = dynamic(() => import("@/components/magicui/loading-screen").then((m) => m.LoadingScreen), { ssr: false });
+import { LoadingScreen } from "@/components/magicui/loading-screen";
 import { Beam } from "@/components/magicui/beam";
 
 const fontSans = FontSans({

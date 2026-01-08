@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DATA } from "@/data/resume";
 
 export const LoadingScreen = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
